@@ -1,0 +1,161 @@
+{
+  "info": {
+    "name": "Apigee KVM Management",
+    "description": "Manage Apigee X KVMs via Management API.\n\nGet token: gcloud auth print-access-token\nPaste it into the 'token' collection variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "org", "value": "YOUR_ORG_NAME" },
+    { "key": "env", "value": "YOUR_ENV_NAME" },
+    { "key": "kvm_name", "value": "PreFlightCheck" },
+    { "key": "proxy_name", "value": "dummy-proxy" },
+    { "key": "token", "value": "PASTE_GCLOUD_AUTH_TOKEN_HERE" }
+  ],
+  "item": [
+    {
+      "name": "KVM Operations",
+      "item": [
+        {
+          "name": "Create KVM",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{kvm_name}}\",\n  \"encrypted\": true\n}"
+            },
+            "url": {
+              "raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps",
+              "protocol": "https",
+              "host": ["apigee", "googleapis", "com"],
+              "path": ["v1", "organizations", "{{org}}", "environments", "{{env}}", "keyvaluemaps"]
+            }
+          }
+        },
+        {
+          "name": "List KVMs",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps",
+              "protocol": "https",
+              "host": ["apigee", "googleapis", "com"],
+              "path": ["v1", "organizations", "{{org}}", "environments", "{{env}}", "keyvaluemaps"]
+            }
+          }
+        },
+        {
+          "name": "Delete KVM",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps/{{kvm_name}}",
+              "protocol": "https",
+              "host": ["apigee", "googleapis", "com"],
+              "path": ["v1", "organizations", "{{org}}", "environments", "{{env}}", "keyvaluemaps", "{{kvm_name}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "KVM Entries",
+      "item": [
+        {
+          "name": "Add Proxy Config Entry",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{proxy_name}}\",\n  \"value\": \"{\\\"space\\\":\\\"BUSpaceName\\\",\\\"flags\\\":{\\\"headerInjection\\\":false,\\\"cors\\\":false,\\\"auth\\\":true,\\\"securityFilters\\\":false,\\\"apiTrafficManagement\\\":false,\\\"jwsVerify\\\":\\\"true\\\",\\\"jwsGenerate\\\":\\\"true\\\",\\\"requestDecryption\\\":\\\"true\\\",\\\"responseEncryption\\\":\\\"true\\\",\\\"specValidation\\\":false},\\\"privateKeyIdentifier\\\":[\\\"space\\\"],\\\"authType\\\":[\\\"encryptedJWT\\\"],\\\"jws\\\":{\\\"algorithm\\\":\\\"RS256\\\",\\\"type\\\":\\\"CompactDetachSerialization\\\"},\\\"jwe\\\":{\\\"key\\\":\\\"RSA-OAEP-256\\\",\\\"content\\\":\\\"A256GCM\\\"},\\\"traffic\\\":{\\\"spikeArrest\\\":{\\\"rate\\\":\\\"100ps\\\"}},\\\"headers\\\":{\\\"target.request\\\":{\\\"X-Client-Id\\\":\\\"neosalpha-client\\\",\\\"X-Request-Origin\\\":\\\"gateway\\\",\\\"X-Forwarded-Proto\\\":\\\"https\\\"},\\\"api.response\\\":{\\\"X-Processed-By\\\":\\\"apigee-gateway\\\",\\\"X-Proxy-Name\\\":\\\"spec_validation\\\",\\\"Cache-Control\\\":\\\"no-store\\\",\\\"Strict-Transport-Security\\\":\\\"max-age=31536000; includeSubDomains\\\"}},\\\"target\\\":{\\\"basepath\\\":\\\"/\\\",\\\"targetHost\\\":\\\"\\\",\\\"targetAuth\\\":\\\"TX/NoAUTH/MTLS\\\"}}\"\n}"
+            },
+            "url": {
+              "raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps/{{kvm_name}}/entries",
+              "protocol": "https",
+              "host": ["apigee", "googleapis", "com"],
+              "path": ["v1", "organizations", "{{org}}", "environments", "{{env}}", "keyvaluemaps", "{{kvm_name}}", "entries"]
+            }
+          }
+        },
+        {
+          "name": "Get Proxy Config Entry",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps/{{kvm_name}}/entries/{{proxy_name}}",
+              "protocol": "https",
+              "host": ["apigee", "googleapis", "com"],
+              "path": ["v1", "organizations", "{{org}}", "environments", "{{env}}", "keyvaluemaps", "{{kvm_name}}", "entries", "{{proxy_name}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Proxy Config Entry",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{proxy_name}}\",\n  \"value\": \"{\\\"space\\\":\\\"BUSpaceName\\\",\\\"flags\\\":{\\\"headerInjection\\\":false,\\\"cors\\\":false,\\\"auth\\\":true,\\\"securityFilters\\\":false,\\\"apiTrafficManagement\\\":false,\\\"jwsVerify\\\":\\\"true\\\",\\\"jwsGenerate\\\":\\\"true\\\",\\\"requestDecryption\\\":\\\"true\\\",\\\"responseEncryption\\\":\\\"true\\\",\\\"specValidation\\\":false},\\\"privateKeyIdentifier\\\":[\\\"space\\\"],\\\"authType\\\":[\\\"encryptedJWT\\\"],\\\"jws\\\":{\\\"algorithm\\\":\\\"RS256\\\",\\\"type\\\":\\\"CompactDetachSerialization\\\"},\\\"jwe\\\":{\\\"key\\\":\\\"RSA-OAEP-256\\\",\\\"content\\\":\\\"A256GCM\\\"},\\\"traffic\\\":{\\\"spikeArrest\\\":{\\\"rate\\\":\\\"100ps\\\"}},\\\"headers\\\":{\\\"target.request\\\":{\\\"X-Client-Id\\\":\\\"neosalpha-client\\\",\\\"X-Request-Origin\\\":\\\"gateway\\\",\\\"X-Forwarded-Proto\\\":\\\"https\\\"},\\\"api.response\\\":{\\\"X-Processed-By\\\":\\\"apigee-gateway\\\",\\\"X-Proxy-Name\\\":\\\"spec_validation\\\",\\\"Cache-Control\\\":\\\"no-store\\\",\\\"Strict-Transport-Security\\\":\\\"max-age=31536000; includeSubDomains\\\"}},\\\"target\\\":{\\\"basepath\\\":\\\"/\\\",\\\"targetHost\\\":\\\"\\\",\\\"targetAuth\\\":\\\"TX/NoAUTH/MTLS\\\"}}\"\n}"
+            },
+            "url": {
+              "raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps/{{kvm_name}}/entries/{{proxy_name}}",
+              "protocol": "https",
+              "host": ["apigee", "googleapis", "com"],
+              "path": ["v1", "organizations", "{{org}}", "environments", "{{env}}", "keyvaluemaps", "{{kvm_name}}", "entries", "{{proxy_name}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Proxy Config Entry",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps/{{kvm_name}}/entries/{{proxy_name}}",
+              "protocol": "https",
+              "host": ["apigee", "googleapis", "com"],
+              "path": ["v1", "organizations", "{{org}}", "environments", "{{env}}", "keyvaluemaps", "{{kvm_name}}", "entries", "{{proxy_name}}"]
+            }
+          }
+        },
+        {
+          "name": "List All KVM Entries",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps/{{kvm_name}}/entries",
+              "protocol": "https",
+              "host": ["apigee", "googleapis", "com"],
+              "path": ["v1", "organizations", "{{org}}", "environments", "{{env}}", "keyvaluemaps", "{{kvm_name}}", "entries"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
