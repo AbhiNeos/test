@@ -1,0 +1,149 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-07-10T00:00:00.000Z",
+  "__export_source": "insomnia.desktop:2024.1.0",
+  "resources": [
+    {
+      "_id": "wrk_apigee_kvm",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "Apigee KVM Management",
+      "description": "Collection to manage Apigee X KVMs via Management API.\n\nGet token: gcloud auth print-access-token\nPaste it into the 'token' environment variable.\n\nFor Add/Update entry: edit the JSON in the request body, then use the helper request 'Stringify JSON Config' to convert it.",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_apigee_kvm",
+      "_type": "environment",
+      "parentId": "wrk_apigee_kvm",
+      "name": "Apigee Environment",
+      "data": {
+        "org": "YOUR_ORG_NAME",
+        "env": "YOUR_ENV_NAME",
+        "kvm_name": "PreFlightCheck",
+        "proxy_name": "dummy-proxy",
+        "token": "PASTE_GCLOUD_AUTH_TOKEN_HERE"
+      },
+      "dataPropertyOrder": {
+        "&": ["org", "env", "kvm_name", "proxy_name", "token"]
+      }
+    },
+    {
+      "_id": "fld_kvm",
+      "_type": "request_group",
+      "parentId": "wrk_apigee_kvm",
+      "name": "KVM Operations"
+    },
+    {
+      "_id": "req_create_kvm",
+      "_type": "request",
+      "parentId": "fld_kvm",
+      "name": "Create KVM",
+      "method": "POST",
+      "url": "https://apigee.googleapis.com/v1/organizations/{{ _.org }}/environments/{{ _.env }}/keyvaluemaps",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"{{ _.kvm_name }}\",\n  \"encrypted\": true\n}"
+      }
+    },
+    {
+      "_id": "req_list_kvms",
+      "_type": "request",
+      "parentId": "fld_kvm",
+      "name": "List KVMs",
+      "method": "GET",
+      "url": "https://apigee.googleapis.com/v1/organizations/{{ _.org }}/environments/{{ _.env }}/keyvaluemaps",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_delete_kvm",
+      "_type": "request",
+      "parentId": "fld_kvm",
+      "name": "Delete KVM",
+      "method": "DELETE",
+      "url": "https://apigee.googleapis.com/v1/organizations/{{ _.org }}/environments/{{ _.env }}/keyvaluemaps/{{ _.kvm_name }}",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "fld_entries",
+      "_type": "request_group",
+      "parentId": "wrk_apigee_kvm",
+      "name": "KVM Entries"
+    },
+    {
+      "_id": "req_add_entry",
+      "_type": "request",
+      "parentId": "fld_entries",
+      "name": "Add Proxy Config Entry",
+      "description": "The value field contains the stringified JSON config.\nTo update it: use any JSON stringify tool, then paste the escaped string as the value.",
+      "method": "POST",
+      "url": "https://apigee.googleapis.com/v1/organizations/{{ _.org }}/environments/{{ _.env }}/keyvaluemaps/{{ _.kvm_name }}/entries",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"{{ _.proxy_name }}\",\n  \"value\": \"{\\\"space\\\":\\\"BUSpaceName\\\",\\\"flags\\\":{\\\"headerInjection\\\":false,\\\"cors\\\":false,\\\"auth\\\":true,\\\"securityFilters\\\":false,\\\"apiTrafficManagement\\\":false,\\\"jwsVerify\\\":\\\"true\\\",\\\"jwsGenerate\\\":\\\"true\\\",\\\"requestDecryption\\\":\\\"true\\\",\\\"responseEncryption\\\":\\\"true\\\",\\\"specValidation\\\":false},\\\"privateKeyIdentifier\\\":[\\\"space\\\"],\\\"authType\\\":[\\\"encryptedJWT\\\"],\\\"jws\\\":{\\\"algorithm\\\":\\\"RS256\\\",\\\"type\\\":\\\"CompactDetachSerialization\\\"},\\\"jwe\\\":{\\\"key\\\":\\\"RSA-OAEP-256\\\",\\\"content\\\":\\\"A256GCM\\\"},\\\"traffic\\\":{\\\"spikeArrest\\\":{\\\"rate\\\":\\\"100ps\\\"}},\\\"headers\\\":{\\\"target.request\\\":{\\\"X-Client-Id\\\":\\\"neosalpha-client\\\",\\\"X-Request-Origin\\\":\\\"gateway\\\",\\\"X-Forwarded-Proto\\\":\\\"https\\\"},\\\"api.response\\\":{\\\"X-Processed-By\\\":\\\"apigee-gateway\\\",\\\"X-Proxy-Name\\\":\\\"spec_validation\\\",\\\"Cache-Control\\\":\\\"no-store\\\",\\\"Strict-Transport-Security\\\":\\\"max-age=31536000; includeSubDomains\\\"}},\\\"target\\\":{\\\"basepath\\\":\\\"/\\\",\\\"targetHost\\\":\\\"\\\",\\\"targetAuth\\\":\\\"TX/NoAUTH/MTLS\\\"}}\"\n}"
+      }
+    },
+    {
+      "_id": "req_get_entry",
+      "_type": "request",
+      "parentId": "fld_entries",
+      "name": "Get Proxy Config Entry",
+      "method": "GET",
+      "url": "https://apigee.googleapis.com/v1/organizations/{{ _.org }}/environments/{{ _.env }}/keyvaluemaps/{{ _.kvm_name }}/entries/{{ _.proxy_name }}",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_update_entry",
+      "_type": "request",
+      "parentId": "fld_entries",
+      "name": "Update Proxy Config Entry",
+      "description": "The value field contains the stringified JSON config.\nTo update it: use any JSON stringify tool, then paste the escaped string as the value.",
+      "method": "PUT",
+      "url": "https://apigee.googleapis.com/v1/organizations/{{ _.org }}/environments/{{ _.env }}/keyvaluemaps/{{ _.kvm_name }}/entries/{{ _.proxy_name }}",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"{{ _.proxy_name }}\",\n  \"value\": \"{\\\"space\\\":\\\"BUSpaceName\\\",\\\"flags\\\":{\\\"headerInjection\\\":false,\\\"cors\\\":false,\\\"auth\\\":true,\\\"securityFilters\\\":false,\\\"apiTrafficManagement\\\":false,\\\"jwsVerify\\\":\\\"true\\\",\\\"jwsGenerate\\\":\\\"true\\\",\\\"requestDecryption\\\":\\\"true\\\",\\\"responseEncryption\\\":\\\"true\\\",\\\"specValidation\\\":false},\\\"privateKeyIdentifier\\\":[\\\"space\\\"],\\\"authType\\\":[\\\"encryptedJWT\\\"],\\\"jws\\\":{\\\"algorithm\\\":\\\"RS256\\\",\\\"type\\\":\\\"CompactDetachSerialization\\\"},\\\"jwe\\\":{\\\"key\\\":\\\"RSA-OAEP-256\\\",\\\"content\\\":\\\"A256GCM\\\"},\\\"traffic\\\":{\\\"spikeArrest\\\":{\\\"rate\\\":\\\"100ps\\\"}},\\\"headers\\\":{\\\"target.request\\\":{\\\"X-Client-Id\\\":\\\"neosalpha-client\\\",\\\"X-Request-Origin\\\":\\\"gateway\\\",\\\"X-Forwarded-Proto\\\":\\\"https\\\"},\\\"api.response\\\":{\\\"X-Processed-By\\\":\\\"apigee-gateway\\\",\\\"X-Proxy-Name\\\":\\\"spec_validation\\\",\\\"Cache-Control\\\":\\\"no-store\\\",\\\"Strict-Transport-Security\\\":\\\"max-age=31536000; includeSubDomains\\\"}},\\\"target\\\":{\\\"basepath\\\":\\\"/\\\",\\\"targetHost\\\":\\\"\\\",\\\"targetAuth\\\":\\\"TX/NoAUTH/MTLS\\\"}}\"\n}"
+      }
+    },
+    {
+      "_id": "req_delete_entry",
+      "_type": "request",
+      "parentId": "fld_entries",
+      "name": "Delete Proxy Config Entry",
+      "method": "DELETE",
+      "url": "https://apigee.googleapis.com/v1/organizations/{{ _.org }}/environments/{{ _.env }}/keyvaluemaps/{{ _.kvm_name }}/entries/{{ _.proxy_name }}",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_list_entries",
+      "_type": "request",
+      "parentId": "fld_entries",
+      "name": "List All KVM Entries",
+      "method": "GET",
+      "url": "https://apigee.googleapis.com/v1/organizations/{{ _.org }}/environments/{{ _.env }}/keyvaluemaps/{{ _.kvm_name }}/entries",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    }
+  ]
+}
