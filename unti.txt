@@ -1,0 +1,306 @@
+/**
+ * EvaluateError.js
+ *
+ * Maps Apigee fault variables to a standardised JSON error response.
+ *
+ * Detection priority:
+ *   1. RaiseFault  — fault.name = "RaiseFault", policy name parsed from error.message
+ *   2. fault.name  — native Apigee policy fault identifier
+ *   3. error.status.code — HTTP status code fallback
+ *
+ * OAS Validation (fault.name = "OASValidationFailure"):
+ *   Per Apigee docs (cloud.google.com/apigee/docs/.../oas-validation-policy#errorreference):
+ *     - fault.name  = "OASValidationFailure"
+ *     - error.message contains the verbose reason with format:
+ *       "OASValidation[{policy-name}]: {path} failed with reason: \"[ERROR - {REASON}: []]\""
+ *   The reason is extracted and cleaned before setting as the error message.
+ *
+ * To add a proxy-specific RaiseFault error:
+ *   1. Name your RaiseFault policy "RF-YourError" in the proxy
+ *   2. Add case "RF-YourError" in the RAISEFAULT section below
+ */
+
+// ---------------------------------------------------------------------------
+// Helper
+// ---------------------------------------------------------------------------
+
+function setFault(status, phrase, id, topMessage, errorCode, errorMessage, path, url) {
+    context.setVariable("custom.error.status", String(status));
+    context.setVariable("custom.error.phrase", phrase);
+    context.setVariable("custom.error.code", errorCode);
+    context.setVariable("custom.error.body", JSON.stringify({
+        "Code": status + " " + phrase,
+        "Id": id,
+        "Message": topMessage,
+        "Errors": [{
+            "ErrorCode": errorCode,
+            "Message": errorMessage,
+            "Path": path || "",
+            "Url": url || ""
+        }]
+    }, null, 4));
+}
+
+// ---------------------------------------------------------------------------
+// Parse OAS error reason from verbose error.message
+// Ref: cloud.google.com/apigee/docs/.../oas-validation-policy#errorreference
+// Format: "... failed with reason: \"[ERROR - <REASON>: []]\""
+// ---------------------------------------------------------------------------
+
+function extractOASReason(msg) {
+    var match = msg.match(/failed with reason: \"\[ERROR - (.*?): \[\]\]\"/);
+    if (match && match[1]) return match[1];
+    return msg.replace(/\[ERROR - /, "").replace(/: \[\]\].*/, "").trim();
+}
+
+// ---------------------------------------------------------------------------
+// Read context variables
+// ---------------------------------------------------------------------------
+
+var rawFaultName    = context.getVariable("fault.name")        || "";
+var errorMessage    = context.getVariable("error.message")     || "";
+var errorStatusCode = parseInt(context.getVariable("error.status.code") || "500", 10);
+
+// ---------------------------------------------------------------------------
+// Resolve fault name
+// RaiseFault always sets fault.name = "RaiseFault"; actual policy name is in error.message
+// ---------------------------------------------------------------------------
+
+var faultName = rawFaultName;
+
+if (rawFaultName === "RaiseFault" && errorMessage.indexOf("Fault name : ") !== -1) {
+    faultName = errorMessage.split("Fault name : ")[1].trim();
+}
+
+// ---------------------------------------------------------------------------
+// OAS DETECTION
+// From Apigee trace, the OAS policy sets:
+//   OASValidation.{policy-name}.fault.name  = "steps.oasvalidation.Failed"
+//   OASValidation.{policy-name}.fault.cause = full verbose message
+//   OASValidation.{policy-name}.failed      = true
+//
+// fault.name at proxy level = "Failed" (last segment) which is too generic.
+// Instead, check the OAS-specific policy variable directly.
+// ---------------------------------------------------------------------------
+
+var oasFaultCause = context.getVariable("OASValidation.OAS-Validate.fault.cause") || "";
+var oasFailed     = context.getVariable("OASValidation.OAS-Validate.failed") || false;
+
+if (oasFailed === true || oasFailed === "true" || oasFaultCause !== "") {
+    faultName = "OASValidationFailure";
+}
+
+// ---------------------------------------------------------------------------
+// Switch on fault name
+// ---------------------------------------------------------------------------
+
+switch (faultName) {
+
+    // =======================================================================
+    // RAISEFAULT — proxy-specific custom errors (RF-* naming convention)
+    // Add new RF-* cases here as proxies require them
+    // =======================================================================
+
+    // case "RF-InvalidCredentials":
+    //     setFault(401, "Unauthorized", "APIGEE-401-002", "Authentication credentials are missing or invalid",
+    //         "INVALID_CREDENTIALS", "The provided credentials do not match a registered application",
+    //         "/headers/Authorization", "https://developer.barclays.com/errors/authentication");
+    //     break;
+
+    // case "RF-BusinessValidationError":
+    //     setFault(400, "Bad Request", "APIGEE-400-002", "Business validation failed",
+    //         "BUSINESS_RULE_VIOLATION", context.getVariable("custom.error.detail") || "Business rule validation failed",
+    //         "/request/body", "https://developer.barclays.com/errors/business-validation");
+    //     break;
+
+    // ─── Add new RF-* cases above this line ────────────────────────────────
+
+    // =======================================================================
+    // OAS VALIDATION — fault.name = "OASValidationFailure"
+    // Detected via OASValidation.OAS-Validate.failed = true
+    // fault.cause format: "OASValidation OAS-Validate with resource "oas://api-spec.yaml":
+    //   failed with reason: \"[ERROR - No API path found that matches request '/path': []]\""
+    // =======================================================================
+    case "OASValidationFailure":
+        setFault(400, "Bad Request", "APIGEE-400-001",
+            "Invalid request payload or parameters",
+            "INVALID_INPUT",
+            extractOASReason(oasFaultCause || errorMessage),
+            "/request",
+            "https://developer.barclays.com/errors/invalid-input");
+        break;
+
+    // =======================================================================
+    // 400 — JSONThreatProtection / XMLThreatProtection / validation faults
+    // =======================================================================
+    case "ExceededContainerDepth":
+    case "ExceededObjectEntryCount":
+    case "ExceededArrayElementCount":
+    case "ExceededObjectEntryNameLength":
+    case "ExceededStringValueLength":
+    case "ThreatDetected":
+    case "SourceUnavailable":
+    case "NonMessageVariable":
+    case "ExecutionFailed":
+    case "InvalidJsonFormat":
+        setFault(400, "Bad Request", "APIGEE-400-001",
+            "Invalid request payload or parameters",
+            "INVALID_INPUT",
+            "Request body contains invalid or missing fields",
+            "/request/body",
+            "https://developer.barclays.com/errors/invalid-input");
+        break;
+
+    // =======================================================================
+    // 401 — OAuthV2, VerifyAPIKey, JWT validation failures
+    // =======================================================================
+    case "FailedToResolveAccessToken":
+    case "FailedToResolveToken":
+    case "FailedToResolveAuthorizationCode":
+    case "InvalidAccessToken":
+    case "access_token_expired":
+    case "invalid_access_token":
+    case "TokenExpired":
+    case "InvalidJWT":
+    case "BadJOSEHeader":
+    case "AlgorithmNotAllowed":
+    case "InvalidClaim":
+    case "FailedToResolveClaim":
+    case "InvalidApiKey":
+    case "FailedToResolveAPIKey":
+    case "DecryptionFailed":
+    case "JWEDecryptionFailed":
+        setFault(401, "Unauthorized", "APIGEE-401-001",
+            "Authentication Failed",
+            "INVALID_TOKEN",
+            "Access token is missing or invalid",
+            "/headers/Authorization",
+            "https://developer.barclays.com/errors/authentication");
+        break;
+
+    // =======================================================================
+    // 403 — Scope check failures, API product mismatch
+    // =======================================================================
+    case "InsufficientScope":
+    case "InvalidApiKeyForGivenResource":
+    case "InvalidAPICallAsNoApiProductMatchFound":
+    case "ApiKeyNotApproved":
+    case "app_not_approved":
+    case "CompanyStatusNotActive":
+    case "DeveloperStatusNotActive":
+        setFault(403, "Forbidden", "APIGEE-403-001",
+            "Access denied",
+            "INSUFFICIENT_SCOPE",
+            "Client does not have required permissions",
+            "/api/resource",
+            "https://developer.barclays.com/errors/authorization");
+        break;
+
+    // =======================================================================
+    // 408 — Target connection timeout, io.timeout.millis exceeded
+    // =======================================================================
+    case "GatewayTimeout":
+    case "ClientTimeout":
+    case "Timeout":
+    case "ConnectionTimeout":
+        setFault(408, "Request Timeout", "APIGEE-408-001",
+            "Request timeout",
+            "CLIENT_TIMEOUT",
+            "Client failed to send request within allowed time",
+            "/api/resource",
+            "https://developer.barclays.com/errors/timeout");
+        break;
+
+    // =======================================================================
+    // 429 — SpikeArrest, Quota policy violations
+    // =======================================================================
+    case "SpikeArrestViolation":
+    case "QuotaViolation":
+    case "InvalidMessageWeight":
+    case "FailedToResolveSpikeArrestRate":
+    case "InvalidQuotaInterval":
+    case "InvalidQuotaTimeUnit":
+    case "FailedToResolveQuotaIntervalReference":
+        setFault(429, "Too Many Requests", "APIGEE-429-001",
+            "Rate limit exceeded",
+            "QUOTA_EXCEEDED",
+            "API rate limit has been exceeded",
+            "/api/resource",
+            "https://developer.barclays.com/errors/rate-limit");
+        break;
+
+    // =======================================================================
+    // 502 — Target returns invalid/malformed response
+    // =======================================================================
+    case "BadGateway":
+    case "JWKSFetchFailed":
+    case "JWKSResponseUnexpected":
+        setFault(502, "Bad Gateway", "APIGEE-502-001",
+            "Invalid response from downstream service",
+            "DOWNSTREAM_ERROR",
+            "Received invalid response from backend service",
+            "/target/endpoint",
+            "https://developer.barclays.com/errors/bad-gateway");
+        break;
+
+    // =======================================================================
+    // 503 — Target unreachable, connection refused, SSL error
+    // =======================================================================
+    case "ServiceUnavailable":
+    case "TargetConnectFailed":
+    case "ConnectionRefused":
+    case "SSLHandshakeFailed":
+    case "SSLInfoAccessFailure":
+        setFault(503, "Service Unavailable", "APIGEE-503-001",
+            "Service temporarily unavailable",
+            "SERVICE_DOWN",
+            "Backend service is currently unavailable",
+            "/target/endpoint",
+            "https://developer.barclays.com/errors/service-unavailable");
+        break;
+
+    // =======================================================================
+    // ErrorResponseCode — backend returned a 4xx/5xx status
+    // =======================================================================
+    case "ErrorResponseCode":
+        var backendStatus = parseInt(context.getVariable("error.status.code"), 10) || 502;
+        if (backendStatus >= 500) {
+            setFault(503, "Service Unavailable", "APIGEE-503-001",
+                "Service temporarily unavailable", "SERVICE_DOWN",
+                "Backend service is currently unavailable",
+                "/target/endpoint", "https://developer.barclays.com/errors/service-unavailable");
+        } else {
+            setFault(502, "Bad Gateway", "APIGEE-502-001",
+                "Invalid response from downstream service", "DOWNSTREAM_ERROR",
+                "Received invalid response from backend service",
+                "/target/endpoint", "https://developer.barclays.com/errors/bad-gateway");
+        }
+        break;
+
+    // =======================================================================
+    // Default — fallback by HTTP status code
+    // =======================================================================
+    default:
+        var statusMap = {
+            400: function() { setFault(400, "Bad Request", "APIGEE-400-001", "Invalid request payload or parameters", "INVALID_INPUT", "Request body contains invalid or missing fields", "/request/body", "https://developer.barclays.com/errors/invalid-input"); },
+            401: function() { setFault(401, "Unauthorized", "APIGEE-401-001", "Authentication Failed", "INVALID_TOKEN", "Access token is missing or invalid", "/headers/Authorization", "https://developer.barclays.com/errors/authentication"); },
+            403: function() { setFault(403, "Forbidden", "APIGEE-403-001", "Access denied", "INSUFFICIENT_SCOPE", "Client does not have required permissions", "/api/resource", "https://developer.barclays.com/errors/authorization"); },
+            404: function() { setFault(400, "Bad Request", "APIGEE-400-001", "Invalid request payload or parameters", "INVALID_INPUT", "Requested path does not exist in the API specification", "/request/path", "https://developer.barclays.com/errors/invalid-input"); },
+            405: function() { setFault(400, "Bad Request", "APIGEE-400-001", "Invalid request payload or parameters", "INVALID_INPUT", "HTTP method is not defined in the API specification for this path", "/request/method", "https://developer.barclays.com/errors/invalid-input"); },
+            408: function() { setFault(408, "Request Timeout", "APIGEE-408-001", "Request timeout", "CLIENT_TIMEOUT", "Client failed to send request within allowed time", "/api/resource", "https://developer.barclays.com/errors/timeout"); },
+            415: function() { setFault(400, "Bad Request", "APIGEE-400-001", "Invalid request payload or parameters", "INVALID_INPUT", "Content-Type is not defined in the API specification", "/headers/Content-Type", "https://developer.barclays.com/errors/invalid-input"); },
+            429: function() { setFault(429, "Too Many Requests", "APIGEE-429-001", "Rate limit exceeded", "QUOTA_EXCEEDED", "API rate limit has been exceeded", "/api/resource", "https://developer.barclays.com/errors/rate-limit"); },
+            502: function() { setFault(502, "Bad Gateway", "APIGEE-502-001", "Invalid response from downstream service", "DOWNSTREAM_ERROR", "Received invalid response from backend service", "/target/endpoint", "https://developer.barclays.com/errors/bad-gateway"); },
+            503: function() { setFault(503, "Service Unavailable", "APIGEE-503-001", "Service temporarily unavailable", "SERVICE_DOWN", "Backend service is currently unavailable", "/target/endpoint", "https://developer.barclays.com/errors/service-unavailable"); }
+        };
+
+        if (statusMap[errorStatusCode]) {
+            statusMap[errorStatusCode]();
+        } else {
+            setFault(500, "Internal Server Error", "APIGEE-500-001",
+                "Unexpected server error", "INTERNAL_ERROR",
+                "An unknown error occurred at gateway",
+                "/apigee/gateway", "https://developer.barclays.com/errors/internal");
+        }
+        break;
+}
