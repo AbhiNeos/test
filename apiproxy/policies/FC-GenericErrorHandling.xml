@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    FC-GenericErrorHandling
+    Fallback FlowCallout to the generic SF-ErrorHandling shared flow.
+    Invoked when the custom KVM key could not be resolved
+    (custom.kvm.resolved = false) or the KVM returned no value.
+-->
+<FlowCallout name="FC-GenericErrorHandling" enabled="true" continueOnError="false">
+    <DisplayName>FC-GenericErrorHandling</DisplayName>
+    <SharedFlowBundle>SF-ErrorHandling</SharedFlowBundle>
+</FlowCallout>

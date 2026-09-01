@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    RF-NoJWKS
+    Simulates a JWKS-unavailable scenario.
+    RaiseFault sets fault.name = "RaiseFault"; ResolveErrorKey.js parses the
+    policy name "RF-NoJWKS" from error.message and maps it to key _JWKS (401).
+-->
+<RaiseFault name="RF-NoJWKS" continueOnError="false" enabled="true">
+    <DisplayName>RF-NoJWKS</DisplayName>
+    <FaultResponse>
+        <Set>
+            <StatusCode>401</StatusCode>
+            <ReasonPhrase>Unauthorized</ReasonPhrase>
+        </Set>
+    </FaultResponse>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

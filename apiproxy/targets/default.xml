@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    Mock Backend Target
+    ===================
+    Uses httpbin.org/status/{code} as a mock backend. It returns whatever HTTP
+    status code is passed in the path, letting us simulate real BACKEND errors.
+
+    The backend status code is extracted from the request path by
+    EV-ExtractBackendCode (from /error-test/backend/{code}) and stored in
+    the variable "backend.code", which builds the target path here.
+
+    When the backend returns a 4xx/5xx, Apigee raises fault.name = "ErrorResponseCode",
+    which ResolveErrorKey.js maps to a BE_<code>_<mapped> KVM key.
+-->
+<TargetEndpoint name="default">
+    <Description>Mock backend (httpbin) that echoes the requested HTTP status code</Description>
+    <FaultRules/>
+    <PreFlow name="PreFlow">
+        <Request>
+            <!-- Point the outbound path at httpbin's status endpoint -->
+            <Step>
+                <Name>AM-SetBackendPath</Name>
+            </Step>
+        </Request>
+        <Response/>
+    </PreFlow>
+    <PostFlow name="PostFlow">
+        <Request/>
+        <Response/>
+    </PostFlow>
+    <Flows/>
+    <HTTPTargetConnection>
+        <Properties>
+            <Property name="success.codes">1xx,2xx,3xx</Property>
+            <Property name="connect.timeout.millis">10000</Property>
+            <Property name="io.timeout.millis">10000</Property>
+        </Properties>
+        <URL>https://httpbin.org</URL>
+    </HTTPTargetConnection>
+</TargetEndpoint>

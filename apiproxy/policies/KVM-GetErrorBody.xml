@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    KVM-GetErrorBody
+    Reads the full JSON error body from the KVM using the key built by
+    JS-ResolveErrorKey (custom.kvm.key). The retrieved value is stored in
+    custom.kvm.errorBody.
+
+    KVM ("custom-error-map") is expected to hold entries like:
+      Key:   AMZ-amazon-search-403
+      Value: {"Code":"403 Forbidden","Id":"AMZ-403-001","Message":"...","Errors":[...]}
+
+    NOTE: Change mapIdentifier to match your KVM name.
+-->
+<KeyValueMapOperations name="KVM-GetErrorBody" mapIdentifier="custom-error-map" continueOnError="true" enabled="true">
+    <DisplayName>KVM-GetErrorBody</DisplayName>
+    <Scope>environment</Scope>
+    <Get assignTo="custom.kvm.errorBody">
+        <Key>
+            <Parameter ref="custom.kvm.key"/>
+        </Key>
+    </Get>
+</KeyValueMapOperations>

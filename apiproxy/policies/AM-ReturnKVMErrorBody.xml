@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    AM-ReturnKVMErrorBody
+    Writes the JSON error body fetched from the KVM (custom.kvm.errorBody)
+    as the API response, verbatim.
+
+    Sets the HTTP status from custom.kvm.status if the KVM value/flow provides one,
+    otherwise defaults to the error.status.code.
+-->
+<AssignMessage name="AM-ReturnKVMErrorBody" continueOnError="false" enabled="true">
+    <DisplayName>AM-ReturnKVMErrorBody</DisplayName>
+    <AssignTo createNew="false" transport="http" type="response"/>
+    <Set>
+        <Payload contentType="application/json" variablePrefix="@" variableSuffix="#">@custom.kvm.errorBody#</Payload>
+        <StatusCode>{custom.kvm.status}</StatusCode>
+        <Headers>
+            <Header name="Content-Type">application/json</Header>
+            <Header name="X-Error-Key">{custom.kvm.key}</Header>
+        </Headers>
+    </Set>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

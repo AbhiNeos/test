@@ -1,0 +1,37 @@
+{
+  "_comment": "Seed values for the 'custom-error-map' environment KVM. Key = built by ResolveErrorKey.js, Value = full JSON error body returned verbatim. Proxy name here is 'error-handling-test'. The generic _500 key MUST exist (lookback fallback).",
+
+  "AMZ_error-handling-test_401": "{\"Code\":\"401 Unauthorized\",\"Id\":\"AMZ-401-001\",\"Message\":\"Authentication failed\",\"Errors\":[{\"ErrorCode\":\"INVALID_API_KEY\",\"Message\":\"The provided API key is missing or invalid\",\"Path\":\"/queryparam/apikey\",\"Url\":\"https://developer.barclays.com/errors/authentication\"}]}",
+
+  "AMZ_error-handling-test_JWKS": "{\"Code\":\"401 Unauthorized\",\"Id\":\"AMZ-401-002\",\"Message\":\"Authentication failed\",\"Errors\":[{\"ErrorCode\":\"JWKS_UNAVAILABLE\",\"Message\":\"The JWKS endpoint could not be reached to verify the token signature\",\"Path\":\"/headers/Authorization\",\"Url\":\"https://developer.barclays.com/errors/authentication\"}]}",
+
+  "AMZ_error-handling-test_JWS": "{\"Code\":\"401 Unauthorized\",\"Id\":\"AMZ-401-003\",\"Message\":\"Authentication failed\",\"Errors\":[{\"ErrorCode\":\"JWS_VERIFICATION_FAILED\",\"Message\":\"The JWS signature could not be verified\",\"Path\":\"/headers/Authorization\",\"Url\":\"https://developer.barclays.com/errors/authentication\"}]}",
+
+  "AMZ_error-handling-test_403": "{\"Code\":\"403 Forbidden\",\"Id\":\"AMZ-403-001\",\"Message\":\"Access denied\",\"Errors\":[{\"ErrorCode\":\"INSUFFICIENT_SCOPE\",\"Message\":\"Client does not have required permissions\",\"Path\":\"/api/resource\",\"Url\":\"https://developer.barclays.com/errors/authorization\"}]}",
+
+  "AMZ_error-handling-test_404": "{\"Code\":\"404 Not Found\",\"Id\":\"AMZ-404-001\",\"Message\":\"Requested resource not found\",\"Errors\":[{\"ErrorCode\":\"RESOURCE_NOT_FOUND\",\"Message\":\"No API path found that matches the request\",\"Path\":\"/request/path\",\"Url\":\"https://developer.barclays.com/errors/not-found\"}]}",
+
+  "AMZ_error-handling-test_400": "{\"Code\":\"400 Bad Request\",\"Id\":\"AMZ-400-001\",\"Message\":\"Invalid request payload or parameters\",\"Errors\":[{\"ErrorCode\":\"INVALID_INPUT\",\"Message\":\"Request failed OAS validation\",\"Path\":\"/request\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "AMZ_error-handling-test_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-500-001\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"INTERNAL_ERROR\",\"Message\":\"An unknown error occurred at the gateway\",\"Path\":\"/apigee/gateway\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "AMZ_error-handling-test_BE_400_400": "{\"Code\":\"400 Bad Request\",\"Id\":\"AMZ-BE-400\",\"Message\":\"Backend rejected the request\",\"Errors\":[{\"ErrorCode\":\"BACKEND_BAD_REQUEST\",\"Message\":\"The backend service returned a 400 Bad Request\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/bad-request\"}]}",
+
+  "AMZ_error-handling-test_BE_401_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-BE-401\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_AUTH_ERROR\",\"Message\":\"The backend rejected the gateway credentials\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "AMZ_error-handling-test_BE_404_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-BE-404\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_NOT_FOUND\",\"Message\":\"The backend resource was not found\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "AMZ_error-handling-test_BE_405_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-BE-405\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_METHOD_ERROR\",\"Message\":\"The backend does not support the method\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "AMZ_error-handling-test_BE_406_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-BE-406\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_NOT_ACCEPTABLE\",\"Message\":\"The backend could not produce an acceptable response\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "AMZ_error-handling-test_BE_412_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-BE-412\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_PRECONDITION_FAILED\",\"Message\":\"A backend precondition failed\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "AMZ_error-handling-test_BE_415_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-BE-415\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_UNSUPPORTED_MEDIA\",\"Message\":\"The backend rejected the media type\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "AMZ_error-handling-test_BE_500_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-BE-500\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_INTERNAL_ERROR\",\"Message\":\"The backend service returned an internal error\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "AMZ_error-handling-test_BE_502_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-BE-502\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_BAD_GATEWAY\",\"Message\":\"The backend service returned a bad gateway error\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "AMZ_error-handling-test_BE_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"AMZ-BE-GENERIC\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_ERROR\",\"Message\":\"The backend service returned an unexpected error\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}"
+}

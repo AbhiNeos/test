@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    JS-ResolveErrorKey
+    Runs ResolveErrorKey.js which inspects the error context and builds a KVM key
+    (custom.kvm.key) plus a boolean flag (custom.kvm.resolved).
+    Does NOT read the KVM itself — that is done by KVM-GetErrorBody.
+-->
+<Javascript name="JS-ResolveErrorKey" timeLimit="200" continueOnError="false" enabled="true">
+    <DisplayName>JS-ResolveErrorKey</DisplayName>
+    <Properties/>
+    <ResourceURL>jsc://ResolveErrorKey.js</ResourceURL>
+</Javascript>

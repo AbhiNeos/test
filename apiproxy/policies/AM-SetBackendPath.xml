@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    AM-SetBackendPath
+    Sets the outbound target path to httpbin's /status/{code} endpoint so the
+    mock backend returns the requested HTTP status code.
+    Result: https://httpbin.org/status/{backend.code}
+-->
+<AssignMessage name="AM-SetBackendPath" continueOnError="false" enabled="true">
+    <DisplayName>AM-SetBackendPath</DisplayName>
+    <AssignTo createNew="false" transport="http" type="request"/>
+    <Set>
+        <Path>/status/{backend.code}</Path>
+        <Verb>GET</Verb>
+    </Set>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

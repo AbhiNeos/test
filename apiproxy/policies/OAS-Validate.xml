@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    OAS-Validate
+    Validates incoming requests against the OpenAPI spec.
+    Catches: invalid paths, wrong HTTP methods, unsupported media types,
+             schema validation errors, missing required fields.
+    All violations result in fault.name = "OASValidationFailure"
+-->
+<OASValidation name="OAS-Validate" continueOnError="false" enabled="true">
+    <DisplayName>OAS-Validate</DisplayName>
+    <OASResource>oas://api-spec.yaml</OASResource>
+    <Options>
+        <ValidateMessageBody>true</ValidateMessageBody>
+    </Options>
+    <Source>request</Source>
+</OASValidation>

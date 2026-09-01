@@ -1,0 +1,54 @@
+openapi: "3.0.1"
+info:
+  title: Error Handling Test API
+  version: "1.0.0"
+  description: API spec used by OAS Validation policy to enforce path, method, and content-type checks
+paths:
+  /valid-endpoint:
+    post:
+      summary: Valid endpoint accepting JSON
+      operationId: postValidEndpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+                value:
+                  type: integer
+      responses:
+        "200":
+          description: Success
+    get:
+      summary: Valid GET endpoint
+      operationId: getValidEndpoint
+      responses:
+        "200":
+          description: Success
+  /secure-endpoint:
+    get:
+      summary: Endpoint requiring authentication
+      operationId: getSecureEndpoint
+      responses:
+        "200":
+          description: Success
+  /rate-limited:
+    get:
+      summary: Rate limited endpoint
+      operationId: getRateLimited
+      responses:
+        "200":
+          description: Success
+  /backend-call:
+    get:
+      summary: Calls backend service
+      operationId: getBackendCall
+      responses:
+        "200":
+          description: Success

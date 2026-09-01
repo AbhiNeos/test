@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    EV-ExtractBackendCode
+    Extracts the {code} segment from /error-test/backend/{code}
+    into the variable "backend.code".
+-->
+<ExtractVariables name="EV-ExtractBackendCode" continueOnError="false" enabled="true">
+    <DisplayName>EV-ExtractBackendCode</DisplayName>
+    <Source>request</Source>
+    <URIPath>
+        <Pattern ignoreCase="true">/backend/{code}</Pattern>
+    </URIPath>
+    <VariablePrefix>backend</VariablePrefix>
+</ExtractVariables>

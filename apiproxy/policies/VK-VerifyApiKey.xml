@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    VK-VerifyApiKey
+    Verifies the API key from the "apikey" query parameter.
+    Missing/invalid key -> fault.name = "InvalidApiKey" (or FailedToResolveAPIKey).
+    ResolveErrorKey.js maps InvalidApiKey -> key _401 (status 401).
+-->
+<VerifyAPIKey name="VK-VerifyApiKey" enabled="true" continueOnError="false">
+    <DisplayName>VK-VerifyApiKey</DisplayName>
+    <APIKey ref="request.queryparam.apikey"/>
+</VerifyAPIKey>

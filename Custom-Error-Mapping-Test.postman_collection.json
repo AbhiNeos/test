@@ -1,0 +1,161 @@
+{
+  "info": {
+    "name": "Custom Error Mapping - Platform & Backend",
+    "_postman_id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+    "description": "Tests KVM-based custom error mapping for Apigee platform errors and backend errors (mock backend via httpbin).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://your-apigee-org-env.apigee.net", "type": "string" },
+    { "key": "basePath", "value": "/error-test", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Platform Errors",
+      "item": [
+        {
+          "name": "InvalidApiKey (401) -> key _401",
+          "request": {
+            "method": "GET", "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{basePath}}/apikey?apikey=invalid-key-123",
+              "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "apikey"],
+              "query": [{ "key": "apikey", "value": "invalid-key-123" }]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 401', function () { pm.response.to.have.status(401); });",
+            "pm.test('Key _401', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_401'); });"
+          ] } }]
+        },
+        {
+          "name": "NoJWKS (401) -> key _JWKS",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/jwks", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "jwks"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 401', function () { pm.response.to.have.status(401); });",
+            "pm.test('Key _JWKS', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_JWKS'); });"
+          ] } }]
+        },
+        {
+          "name": "JWS failure (401) -> key _JWS",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/jws", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "jws"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 401', function () { pm.response.to.have.status(401); });",
+            "pm.test('Key _JWS', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_JWS'); });"
+          ] } }]
+        },
+        {
+          "name": "Forbidden (403) -> key _403",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/forbidden", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "forbidden"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 403', function () { pm.response.to.have.status(403); });",
+            "pm.test('Key _403', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_403'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS bad path (404) -> key _404",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/oas-badpath", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "oas-badpath"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 404', function () { pm.response.to.have.status(404); });",
+            "pm.test('Key _404', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_404'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS schema violation (400) -> key _400",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"value\": \"not-a-number\"}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}{{basePath}}/valid-endpoint", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "valid-endpoint"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400'); });"
+          ] } }]
+        },
+        {
+          "name": "Unmapped fault -> generic key _500",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/unmapped", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "unmapped"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_500'); });"
+          ] } }]
+        }
+      ]
+    },
+    {
+      "name": "Backend Errors",
+      "item": [
+        {
+          "name": "Backend 400 -> key _BE_400_400 (400)",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/backend/400", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "backend", "400"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _BE_400_400', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_400_400'); });"
+          ] } }]
+        },
+        {
+          "name": "Backend 401 -> key _BE_401_500 (500)",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/backend/401", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "backend", "401"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_401_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_401_500'); });"
+          ] } }]
+        },
+        {
+          "name": "Backend 404 -> key _BE_404_500 (500)",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/backend/404", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "backend", "404"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_404_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_404_500'); });"
+          ] } }]
+        },
+        {
+          "name": "Backend 415 -> key _BE_415_500 (500)",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/backend/415", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "backend", "415"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_415_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_415_500'); });"
+          ] } }]
+        },
+        {
+          "name": "Backend 502 -> key _BE_502_500 (500)",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/backend/502", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "backend", "502"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_502_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_502_500'); });"
+          ] } }]
+        },
+        {
+          "name": "Backend 418 (unmapped) -> key _BE_500 (500)",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/backend/418", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "backend", "418"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_500'); });"
+          ] } }]
+        }
+      ]
+    }
+  ]
+}

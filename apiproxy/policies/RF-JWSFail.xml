@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    RF-JWSFail
+    Simulates a JWS verification failure (mock, since a real VerifyJWS needs a token).
+    ResolveErrorKey.js includes "RF-JWSFail" handling via the JWS group; add the
+    case if not already present. Maps to key _JWS (401).
+-->
+<RaiseFault name="RF-JWSFail" continueOnError="false" enabled="true">
+    <DisplayName>RF-JWSFail</DisplayName>
+    <FaultResponse>
+        <Set>
+            <StatusCode>401</StatusCode>
+            <ReasonPhrase>Unauthorized</ReasonPhrase>
+        </Set>
+    </FaultResponse>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

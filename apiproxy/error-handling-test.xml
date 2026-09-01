@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="error-handling-test">
+    <DisplayName>Error Handling Test Proxy</DisplayName>
+    <Description>Test proxy demonstrating custom KVM-based error mapping for both Apigee platform errors and backend errors (mock backend via httpbin)</Description>
+    <CreatedAt>1753700000000</CreatedAt>
+    <LastModifiedAt>1753700000000</LastModifiedAt>
+    <Basepaths>/error-test</Basepaths>
+    <Policies>
+        <Policy>OAS-Validate</Policy>
+        <Policy>VK-VerifyApiKey</Policy>
+        <Policy>RF-NoJWKS</Policy>
+        <Policy>RF-JWSFail</Policy>
+        <Policy>RF-Forbidden</Policy>
+        <Policy>RF-Unmapped</Policy>
+        <Policy>EV-ExtractBackendCode</Policy>
+        <Policy>AM-SetBackendPath</Policy>
+        <Policy>JS-ResolveErrorKey</Policy>
+        <Policy>KVM-GetErrorBody</Policy>
+        <Policy>AM-ReturnKVMErrorBody</Policy>
+        <Policy>FC-GenericErrorHandling</Policy>
+    </Policies>
+    <ProxyEndpoints>
+        <ProxyEndpoint>default</ProxyEndpoint>
+    </ProxyEndpoints>
+    <TargetEndpoints>
+        <TargetEndpoint>default</TargetEndpoint>
+    </TargetEndpoints>
+    <Resources>
+        <Resource>oas://api-spec.yaml</Resource>
+        <Resource>jsc://ResolveErrorKey.js</Resource>
+    </Resources>
+</APIProxy>

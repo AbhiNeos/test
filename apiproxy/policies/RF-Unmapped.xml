@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    RF-Unmapped
+    Raises a fault whose name is NOT in any ResolveErrorKey.js case,
+    to demonstrate the generic lookback -> key _500 (status 500).
+-->
+<RaiseFault name="RF-Unmapped" continueOnError="false" enabled="true">
+    <DisplayName>RF-Unmapped</DisplayName>
+    <FaultResponse>
+        <Set>
+            <StatusCode>500</StatusCode>
+            <ReasonPhrase>Internal Server Error</ReasonPhrase>
+        </Set>
+    </FaultResponse>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    Error Handling Test Proxy
+    =========================
+    Demonstrates the custom KVM-based error mapping (ResolveErrorKey.js) for BOTH
+    Apigee PLATFORM errors and BACKEND errors.
+
+    ── PLATFORM ERROR SCENARIOS ────────────────────────────────────────────────
+      GET  /error-test/apikey            -> VerifyAPIKey fails  -> InvalidApiKey  -> key _401  (401)
+      GET  /error-test/jwks              -> RF-NoJWKS RaiseFault                  -> key _JWKS (401)
+      GET  /error-test/jws               -> RF-JWSFail RaiseFault (mock JWS fail) -> key _JWS  (401)
+      GET  /error-test/forbidden         -> RF-Forbidden RaiseFault (403)         -> key _403  (403)
+      GET  /error-test/oas-badpath       -> OAS: path not found                   -> key _404  (404)
+      POST /error-test/valid-endpoint    -> OAS: schema/method/media violations   -> key _400  (400)
+      GET  /error-test/unmapped          -> RF-Unmapped (generic lookback)        -> key _500  (500)
+
+    ── BACKEND ERROR SCENARIOS ─────────────────────────────────────────────────
+      GET  /error-test/backend/{code}    -> mock backend returns {code}
+                                            fault.name = ErrorResponseCode
+                                            -> key _BE_<code>_<mapped>
+           e.g. /backend/401 -> BE_401_500 (500),  /backend/400 -> BE_400_400 (400),
+                /backend/418 -> BE_500 (500, fallback)
+    ─────────────────────────────────────────────────────────────────────────────
+-->
+<ProxyEndpoint name="default">
+    <Description>Test proxy demonstrating custom KVM error mapping for platform and backend errors</Description>
+
+    <!--
+        DefaultFaultRule — custom KVM-based error mapping.
+          1. JS-ResolveErrorKey     — builds custom.kvm.key / status / resolved
+          2. KVM-GetErrorBody       — fetch JSON body from KVM
+          3. AM-ReturnKVMErrorBody  — return it verbatim (if KVM had a value)
+          4. FC-GenericErrorHandling— safety net if KVM itself returned nothing
+    -->
+    <DefaultFaultRule name="DefaultErrorHandler">
+        <AlwaysEnforce>true</AlwaysEnforce>
+        <Step>
+            <Name>JS-ResolveErrorKey</Name>
+        </Step>
+        <Step>
+            <Name>KVM-GetErrorBody</Name>
+            <Condition>custom.kvm.resolved = true</Condition>
+        </Step>
+        <Step>
+            <Name>AM-ReturnKVMErrorBody</Name>
+            <Condition>(custom.kvm.errorBody != null) and (custom.kvm.errorBody != "")</Condition>
+        </Step>
+        <Step>
+            <Name>FC-GenericErrorHandling</Name>
+            <Condition>(custom.kvm.errorBody = null) or (custom.kvm.errorBody = "")</Condition>
+        </Step>
+    </DefaultFaultRule>
+
+    <PreFlow name="PreFlow">
+        <Request/>
+        <Response/>
+    </PreFlow>
+
+    <Flows>
+        <!-- ========================= PLATFORM ERRORS ========================= -->
+
+        <!-- InvalidApiKey (401) -->
+        <Flow name="ApiKey">
+            <Description>VerifyAPIKey with missing/invalid key -> InvalidApiKey</Description>
+            <Condition>(proxy.pathsuffix MatchesPath "/apikey") and (request.verb = "GET")</Condition>
+            <Request>
+                <Step>
+                    <Name>VK-VerifyApiKey</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
+
+        <!-- NoJWKS (401) via RaiseFault -->
+        <Flow name="Jwks">
+            <Description>Simulates a JWKS-unavailable scenario</Description>
+            <Condition>(proxy.pathsuffix MatchesPath "/jwks") and (request.verb = "GET")</Condition>
+            <Request>
+                <Step>
+                    <Name>RF-NoJWKS</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
+
+        <!-- JWS verification failure (401) via RaiseFault (mock) -->
+        <Flow name="Jws">
+            <Description>Simulates a JWS verification failure</Description>
+            <Condition>(proxy.pathsuffix MatchesPath "/jws") and (request.verb = "GET")</Condition>
+            <Request>
+                <Step>
+                    <Name>RF-JWSFail</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
+
+        <!-- Forbidden (403) via RaiseFault -->
+        <Flow name="Forbidden">
+            <Description>Raises a 403 forbidden fault</Description>
+            <Condition>(proxy.pathsuffix MatchesPath "/forbidden") and (request.verb = "GET")</Condition>
+            <Request>
+                <Step>
+                    <Name>RF-Forbidden</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
+
+        <!-- OAS: bad path (404) -->
+        <Flow name="OasBadPath">
+            <Description>OAS validation fails - path not in spec</Description>
+            <Condition>(proxy.pathsuffix MatchesPath "/oas-badpath") and (request.verb = "GET")</Condition>
+            <Request>
+                <Step>
+                    <Name>OAS-Validate</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
+
+        <!-- OAS: schema / method / media violation (400) -->
+        <Flow name="OasValidate">
+            <Description>OAS validation on a valid path - triggers schema/media errors</Description>
+            <Condition>(proxy.pathsuffix MatchesPath "/valid-endpoint")</Condition>
+            <Request>
+                <Step>
+                    <Name>OAS-Validate</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
+
+        <!-- Generic lookback (500) via RaiseFault with unmapped fault name -->
+        <Flow name="Unmapped">
+            <Description>Raises an unmapped fault -> generic 500 lookback</Description>
+            <Condition>(proxy.pathsuffix MatchesPath "/unmapped") and (request.verb = "GET")</Condition>
+            <Request>
+                <Step>
+                    <Name>RF-Unmapped</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
+
+        <!-- ========================= BACKEND ERRORS ========================= -->
+
+        <!-- Mock backend returns a caller-specified status code -->
+        <Flow name="BackendCall">
+            <Description>Routes to mock backend which returns the requested status code</Description>
+            <Condition>(proxy.pathsuffix MatchesPath "/backend/*") and (request.verb = "GET")</Condition>
+            <Request>
+                <Step>
+                    <Name>EV-ExtractBackendCode</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
+    </Flows>
+
+    <PostFlow name="PostFlow">
+        <Request/>
+        <Response/>
+    </PostFlow>
+
+    <HTTPProxyConnection>
+        <BasePath>/error-test</BasePath>
+        <VirtualHost>secure</VirtualHost>
+    </HTTPProxyConnection>
+
+    <!-- Backend routes to mock target; everything else is no-target (faults handled locally) -->
+    <RouteRule name="backend-route">
+        <Condition>(proxy.pathsuffix MatchesPath "/backend/*")</Condition>
+        <TargetEndpoint>default</TargetEndpoint>
+    </RouteRule>
+    <RouteRule name="noroute"/>
+</ProxyEndpoint>

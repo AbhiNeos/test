@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    RF-Forbidden
+    Raises a 403 Forbidden fault. ResolveErrorKey.js maps any error with
+    status 403 -> key _403 (status 403).
+-->
+<RaiseFault name="RF-Forbidden" continueOnError="false" enabled="true">
+    <DisplayName>RF-Forbidden</DisplayName>
+    <FaultResponse>
+        <Set>
+            <StatusCode>403</StatusCode>
+            <ReasonPhrase>Forbidden</ReasonPhrase>
+        </Set>
+    </FaultResponse>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>
