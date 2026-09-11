@@ -1,0 +1,1 @@
+{"quota":{"limit":"500","interval":"1","timeUnit":"minute"},"spikeArrest":{"rate":"10ps"}}
