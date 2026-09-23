@@ -1,0 +1,376 @@
+{
+  "info": {
+    "name": "COP API Testing - Custom Error Mapping (COP)",
+    "_postman_id": "e5f6a7b8-c9d0-1234-ef56-567890123456",
+    "description": "Tests KVM-based custom error mapping for proxy cop_api_testing (prefix COP).\n\nPlatform: all 401 -> _401; all 403 -> _403; JOSE faults -> 5 distinct 400 keys; OAS string-matched into 400_MissingFapiId / 400_InvalidFapiId / 400_InvalidFieldFormat / 400_InvalidPayload plus exceptions 406_InvalidAccept / 406_InvalidHeader / 415 / 404 / 500; fallback -> _500.\nBackend: 401,404,405,406,412,415,500,502 -> 500 via _BE_<code>_500; fallback _BE_500.\n\nNo placeholder substitution - every key returns a complete body verbatim.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://your-apigee-org-env.apigee.net", "type": "string" },
+    { "key": "basePath", "value": "/cop-api", "type": "string" },
+    { "key": "validFapiId", "value": "ABC-123456", "type": "string" },
+    { "key": "validRequestId", "value": "req-12345678", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Platform - Simple Buckets",
+      "item": [
+        {
+          "name": "401 any -> key _401",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/unauthorized", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "unauthorized"] },
+            "description": "All 401 scenarios collapse to the single key _401."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 401', function () { pm.response.to.have.status(401); });",
+            "pm.test('Key _401', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_401'); });",
+            "pm.test('ErrorCode UNAUTHORIZED', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('UNAUTHORIZED'); });"
+          ] } }]
+        },
+        {
+          "name": "403 any -> key _403",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/forbidden", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "forbidden"] },
+            "description": "All 403 scenarios collapse to the single key _403."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 403', function () { pm.response.to.have.status(403); });",
+            "pm.test('Key _403', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_403'); });",
+            "pm.test('ErrorCode FORBIDDEN', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('FORBIDDEN'); });"
+          ] } }]
+        },
+        {
+          "name": "Unmapped -> fallback key _500",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/unmapped", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "unmapped"] },
+            "description": "Fault matching no rule -> default fallback key _500."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_500'); });",
+            "pm.test('ErrorCode INTERNAL_ERROR', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('INTERNAL_ERROR'); });"
+          ] } }]
+        }
+      ]
+    },
+    {
+      "name": "Platform - JOSE (400 variants)",
+      "item": [
+        {
+          "name": "JOSE missing claim -> _400_JoseMissingClaim",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/jose/missing-claim", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "jose", "missing-claim"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400_JoseMissingClaim', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400_JoseMissingClaim'); });",
+            "pm.test('ErrorCode JOSE_MISSING_CLAIM', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('JOSE_MISSING_CLAIM'); });"
+          ] } }]
+        },
+        {
+          "name": "JOSE invalid claim -> _400_JoseInvalidClaim",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/jose/invalid-claim", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "jose", "invalid-claim"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400_JoseInvalidClaim', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400_JoseInvalidClaim'); });",
+            "pm.test('ErrorCode JOSE_INVALID_CLAIM', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('JOSE_INVALID_CLAIM'); });"
+          ] } }]
+        },
+        {
+          "name": "JOSE invalid header value -> _400_JoseInvalidHeader",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/jose/invalid-header", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "jose", "invalid-header"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400_JoseInvalidHeader', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400_JoseInvalidHeader'); });",
+            "pm.test('ErrorCode JOSE_INVALID_HEADER', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('JOSE_INVALID_HEADER'); });"
+          ] } }]
+        },
+        {
+          "name": "JOSE null header value -> _400_JoseNullHeader",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/jose/null-header", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "jose", "null-header"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400_JoseNullHeader', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400_JoseNullHeader'); });",
+            "pm.test('ErrorCode JOSE_NULL_HEADER', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('JOSE_NULL_HEADER'); });"
+          ] } }]
+        },
+        {
+          "name": "JOSE signature invalid -> _400_JoseInvalidSignature",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/jose/invalid-signature", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "jose", "invalid-signature"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400_JoseInvalidSignature', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400_JoseInvalidSignature'); });",
+            "pm.test('ErrorCode JOSE_INVALID_SIGNATURE', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('JOSE_INVALID_SIGNATURE'); });"
+          ] } }]
+        }
+      ]
+    },
+    {
+      "name": "Platform - OAS Validation",
+      "item": [
+        {
+          "name": "OAS: x-fapi-financial-id MISSING -> _400_MissingFapiId",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-request-id", "value": "{{validRequestId}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/accounts", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "accounts"] },
+            "description": "Required header x-fapi-financial-id omitted -> OAS 'is required' -> _400_MissingFapiId."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400_MissingFapiId', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400_MissingFapiId'); });",
+            "pm.test('ErrorCode MISSING_FINANCIAL_ID', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('MISSING_FINANCIAL_ID'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS: x-fapi-financial-id BAD REGEX -> _400_InvalidFapiId",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-fapi-financial-id", "value": "NOT-VALID-FORMAT" },
+              { "key": "x-request-id", "value": "{{validRequestId}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/accounts", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "accounts"] },
+            "description": "Header present but fails pattern ^[A-Z]{3}-[0-9]{6}$ -> _400_InvalidFapiId."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400_InvalidFapiId', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400_InvalidFapiId'); });",
+            "pm.test('ErrorCode INVALID_FINANCIAL_ID', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('INVALID_FINANCIAL_ID'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS: bad Accept header -> _406_InvalidAccept",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-fapi-financial-id", "value": "{{validFapiId}}" },
+              { "key": "x-request-id", "value": "{{validRequestId}}" },
+              { "key": "Accept", "value": "application/xml" }
+            ],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/accounts", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "accounts"] },
+            "description": "Accept is not application/json -> _406_InvalidAccept (checked before media-type)."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 406', function () { pm.response.to.have.status(406); });",
+            "pm.test('Key _406_InvalidAccept', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_406_InvalidAccept'); });",
+            "pm.test('ErrorCode INVALID_ACCEPT_HEADER', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('INVALID_ACCEPT_HEADER'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS: other invalid header -> _406_InvalidHeader",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-fapi-financial-id", "value": "{{validFapiId}}" },
+              { "key": "x-request-id", "value": "bad!" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/accounts", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "accounts"] },
+            "description": "x-request-id fails its pattern (and is not the fapi header / Accept) -> _406_InvalidHeader."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 406', function () { pm.response.to.have.status(406); });",
+            "pm.test('Key _406_InvalidHeader', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_406_InvalidHeader'); });",
+            "pm.test('ErrorCode INVALID_HEADER', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('INVALID_HEADER'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS: method not allowed (DELETE) -> _404",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "x-fapi-financial-id", "value": "{{validFapiId}}" },
+              { "key": "x-request-id", "value": "{{validRequestId}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/accounts", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "accounts"] },
+            "description": "/accounts only defines GET -> method not allowed -> _404 (status 404)."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 404', function () { pm.response.to.have.status(404); });",
+            "pm.test('Key _404', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_404'); });",
+            "pm.test('ErrorCode METHOD_NOT_ALLOWED', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('METHOD_NOT_ALLOWED'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS: path not in spec -> _500",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/not-in-spec", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "not-in-spec"] },
+            "description": "Path absent from the spec -> 'No API path found' -> default key _500 (status 500)."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_500'); });",
+            "pm.test('ErrorCode INTERNAL_ERROR', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('INTERNAL_ERROR'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS: unsupported media type -> _415",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/plain" },
+              { "key": "x-fapi-financial-id", "value": "{{validFapiId}}" }
+            ],
+            "body": { "mode": "raw", "raw": "plain text body", "options": { "raw": { "language": "text" } } },
+            "url": { "raw": "{{baseUrl}}{{basePath}}/payments", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "payments"] },
+            "description": "/payments accepts application/json only -> _415 (status 415)."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 415', function () { pm.response.to.have.status(415); });",
+            "pm.test('Key _415', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_415'); });",
+            "pm.test('ErrorCode UNSUPPORTED_MEDIA_TYPE', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('UNSUPPORTED_MEDIA_TYPE'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS: field regex fails (sortCode) -> _400_InvalidFieldFormat",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-fapi-financial-id", "value": "{{validFapiId}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"paymentId\": \"PAY-001\",\n  \"amount\": 100.50,\n  \"sortCode\": \"ABCDEF\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}{{basePath}}/payments", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "payments"] },
+            "description": "All required fields present, but sortCode fails pattern ^[0-9]{6}$ -> _400_InvalidFieldFormat."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400_InvalidFieldFormat', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400_InvalidFieldFormat'); });",
+            "pm.test('ErrorCode INVALID_FIELD_FORMAT', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('INVALID_FIELD_FORMAT'); });"
+          ] } }]
+        },
+        {
+          "name": "OAS: payload validation -> _400_InvalidPayload",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-fapi-financial-id", "value": "{{validFapiId}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"reference\": \"no-required-fields\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}{{basePath}}/payments", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "payments"] },
+            "description": "Required properties paymentId/amount/sortCode missing -> _400_InvalidPayload."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+            "pm.test('Key _400_InvalidPayload', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_400_InvalidPayload'); });",
+            "pm.test('ErrorCode INVALID_PAYLOAD', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('INVALID_PAYLOAD'); });"
+          ] } }]
+        }
+      ]
+    },
+    {
+      "name": "status Errors (all -> 500)",
+      "item": [
+        {
+          "name": "status 401 -> _BE_401_500",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/status/401", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "status", "401"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_401_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_401_500'); });",
+            "pm.test('ErrorCode BACKEND_AUTH_ERROR', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('BACKEND_AUTH_ERROR'); });"
+          ] } }]
+        },
+        {
+          "name": "status 404 -> _BE_404_500",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/status/404", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "status", "404"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_404_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_404_500'); });"
+          ] } }]
+        },
+        {
+          "name": "status 405 -> _BE_405_500",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/status/405", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "status", "405"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_405_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_405_500'); });"
+          ] } }]
+        },
+        {
+          "name": "status 406 -> _BE_406_500",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/status/406", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "status", "406"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_406_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_406_500'); });"
+          ] } }]
+        },
+        {
+          "name": "status 412 -> _BE_412_500",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/status/412", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "status", "412"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_412_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_412_500'); });"
+          ] } }]
+        },
+        {
+          "name": "status 415 -> _BE_415_500",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/status/415", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "status", "415"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_415_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_415_500'); });"
+          ] } }]
+        },
+        {
+          "name": "status 500 -> _BE_500_500",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/status/500", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "status", "500"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_500_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_500_500'); });",
+            "pm.test('ErrorCode BACKEND_INTERNAL_ERROR', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('BACKEND_INTERNAL_ERROR'); });"
+          ] } }]
+        },
+        {
+          "name": "status 502 -> _BE_502_500",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/status/502", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "status", "502"] } },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_502_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_502_500'); });",
+            "pm.test('ErrorCode BACKEND_BAD_GATEWAY', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('BACKEND_BAD_GATEWAY'); });"
+          ] } }]
+        },
+        {
+          "name": "status 418 (unmapped) -> _BE_500 fallback",
+          "request": { "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}{{basePath}}/status/418", "host": ["{{baseUrl}}"], "path": ["{{basePath}}", "status", "418"] },
+            "description": "status status not in the mapping table -> fixed fallback key _BE_500." },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status 500', function () { pm.response.to.have.status(500); });",
+            "pm.test('Key _BE_500', function () { pm.expect(pm.response.headers.get('X-Error-Key')).to.include('_BE_500'); });",
+            "pm.test('ErrorCode BACKEND_ERROR', function () { pm.expect(pm.response.json().Errors[0].ErrorCode).to.eql('BACKEND_ERROR'); });"
+          ] } }]
+        }
+      ]
+    }
+  ]
+}

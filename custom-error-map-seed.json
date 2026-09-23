@@ -1,0 +1,53 @@
+{
+  "_comment": "Seed values for the 'custom-error-map' environment KVM for proxy 'cop_api_testing' (prefix COP). All values are returned VERBATIM - this API uses no errorvalue placeholders. The _500 and _BE_500 keys MUST exist (fallbacks).",
+
+  "COP_cop_api_testing_401": "{\"Code\":\"401 Unauthorized\",\"Id\":\"COP-401-001\",\"Message\":\"Authentication failed\",\"Errors\":[{\"ErrorCode\":\"UNAUTHORIZED\",\"Message\":\"The request could not be authenticated\",\"Path\":\"/headers/Authorization\",\"Url\":\"https://developer.barclays.com/errors/authentication\"}]}",
+
+  "COP_cop_api_testing_403": "{\"Code\":\"403 Forbidden\",\"Id\":\"COP-403-001\",\"Message\":\"Access denied\",\"Errors\":[{\"ErrorCode\":\"FORBIDDEN\",\"Message\":\"The client is not permitted to access this resource\",\"Path\":\"/api/resource\",\"Url\":\"https://developer.barclays.com/errors/authorization\"}]}",
+
+  "COP_cop_api_testing_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-500-001\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"INTERNAL_ERROR\",\"Message\":\"An unknown error occurred at the gateway\",\"Path\":\"/apigee/gateway\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "COP_cop_api_testing_404": "{\"Code\":\"404 Not Found\",\"Id\":\"COP-404-001\",\"Message\":\"Resource or method not found\",\"Errors\":[{\"ErrorCode\":\"METHOD_NOT_ALLOWED\",\"Message\":\"The HTTP method is not supported for this resource\",\"Path\":\"/request/method\",\"Url\":\"https://developer.barclays.com/errors/not-found\"}]}",
+
+  "COP_cop_api_testing_415": "{\"Code\":\"415 Unsupported Media Type\",\"Id\":\"COP-415-001\",\"Message\":\"Unsupported content type\",\"Errors\":[{\"ErrorCode\":\"UNSUPPORTED_MEDIA_TYPE\",\"Message\":\"The Content-Type of the request is not supported\",\"Path\":\"/headers/Content-Type\",\"Url\":\"https://developer.barclays.com/errors/media-type\"}]}",
+
+  "COP_cop_api_testing_406_InvalidAccept": "{\"Code\":\"406 Not Acceptable\",\"Id\":\"COP-406-001\",\"Message\":\"Requested representation not acceptable\",\"Errors\":[{\"ErrorCode\":\"INVALID_ACCEPT_HEADER\",\"Message\":\"The Accept header must be application/json\",\"Path\":\"/headers/Accept\",\"Url\":\"https://developer.barclays.com/errors/not-acceptable\"}]}",
+
+  "COP_cop_api_testing_406_InvalidHeader": "{\"Code\":\"406 Not Acceptable\",\"Id\":\"COP-406-002\",\"Message\":\"Invalid request header\",\"Errors\":[{\"ErrorCode\":\"INVALID_HEADER\",\"Message\":\"A required request header is missing or has an invalid value\",\"Path\":\"/headers\",\"Url\":\"https://developer.barclays.com/errors/not-acceptable\"}]}",
+
+  "COP_cop_api_testing_400_MissingFapiId": "{\"Code\":\"400 Bad Request\",\"Id\":\"COP-400-001\",\"Message\":\"Invalid request\",\"Errors\":[{\"ErrorCode\":\"MISSING_FINANCIAL_ID\",\"Message\":\"The x-fapi-financial-id header is required but was not supplied\",\"Path\":\"/headers/x-fapi-financial-id\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "COP_cop_api_testing_400_InvalidFapiId": "{\"Code\":\"400 Bad Request\",\"Id\":\"COP-400-002\",\"Message\":\"Invalid request\",\"Errors\":[{\"ErrorCode\":\"INVALID_FINANCIAL_ID\",\"Message\":\"The x-fapi-financial-id header does not match the required format\",\"Path\":\"/headers/x-fapi-financial-id\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "COP_cop_api_testing_400_InvalidFieldFormat": "{\"Code\":\"400 Bad Request\",\"Id\":\"COP-400-003\",\"Message\":\"Invalid request\",\"Errors\":[{\"ErrorCode\":\"INVALID_FIELD_FORMAT\",\"Message\":\"A field in the request does not match the required format\",\"Path\":\"/request/body\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "COP_cop_api_testing_400_InvalidPayload": "{\"Code\":\"400 Bad Request\",\"Id\":\"COP-400-004\",\"Message\":\"Invalid request\",\"Errors\":[{\"ErrorCode\":\"INVALID_PAYLOAD\",\"Message\":\"The request payload failed schema validation\",\"Path\":\"/request/body\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "COP_cop_api_testing_400_JoseMissingClaim": "{\"Code\":\"400 Bad Request\",\"Id\":\"COP-400-005\",\"Message\":\"Invalid request\",\"Errors\":[{\"ErrorCode\":\"JOSE_MISSING_CLAIM\",\"Message\":\"A required claim is missing from the signed payload\",\"Path\":\"/headers/x-jws-signature\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "COP_cop_api_testing_400_JoseInvalidClaim": "{\"Code\":\"400 Bad Request\",\"Id\":\"COP-400-006\",\"Message\":\"Invalid request\",\"Errors\":[{\"ErrorCode\":\"JOSE_INVALID_CLAIM\",\"Message\":\"A claim in the signed payload has an invalid value\",\"Path\":\"/headers/x-jws-signature\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "COP_cop_api_testing_400_JoseInvalidHeader": "{\"Code\":\"400 Bad Request\",\"Id\":\"COP-400-007\",\"Message\":\"Invalid request\",\"Errors\":[{\"ErrorCode\":\"JOSE_INVALID_HEADER\",\"Message\":\"The JOSE header contains an invalid value\",\"Path\":\"/headers/x-jws-signature\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "COP_cop_api_testing_400_JoseNullHeader": "{\"Code\":\"400 Bad Request\",\"Id\":\"COP-400-008\",\"Message\":\"Invalid request\",\"Errors\":[{\"ErrorCode\":\"JOSE_NULL_HEADER\",\"Message\":\"The JOSE header contains a null value\",\"Path\":\"/headers/x-jws-signature\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "COP_cop_api_testing_400_JoseInvalidSignature": "{\"Code\":\"400 Bad Request\",\"Id\":\"COP-400-009\",\"Message\":\"Invalid request\",\"Errors\":[{\"ErrorCode\":\"JOSE_INVALID_SIGNATURE\",\"Message\":\"The JWS signature could not be verified\",\"Path\":\"/headers/x-jws-signature\",\"Url\":\"https://developer.barclays.com/errors/invalid-input\"}]}",
+
+  "COP_cop_api_testing_BE_401_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-BE-401\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_AUTH_ERROR\",\"Message\":\"The backend rejected the gateway credentials\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "COP_cop_api_testing_BE_404_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-BE-404\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_NOT_FOUND\",\"Message\":\"The backend resource was not found\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "COP_cop_api_testing_BE_405_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-BE-405\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_METHOD_ERROR\",\"Message\":\"The backend does not support the requested method\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "COP_cop_api_testing_BE_406_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-BE-406\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_NOT_ACCEPTABLE\",\"Message\":\"The backend could not produce an acceptable response\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "COP_cop_api_testing_BE_412_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-BE-412\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_PRECONDITION_FAILED\",\"Message\":\"A backend precondition failed\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "COP_cop_api_testing_BE_415_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-BE-415\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_UNSUPPORTED_MEDIA\",\"Message\":\"The backend rejected the media type\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "COP_cop_api_testing_BE_500_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-BE-500\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_INTERNAL_ERROR\",\"Message\":\"The backend service returned an internal error\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "COP_cop_api_testing_BE_502_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-BE-502\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_BAD_GATEWAY\",\"Message\":\"The backend service returned a bad gateway error\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}",
+
+  "COP_cop_api_testing_BE_500": "{\"Code\":\"500 Internal Server Error\",\"Id\":\"COP-BE-GENERIC\",\"Message\":\"Unexpected server error\",\"Errors\":[{\"ErrorCode\":\"BACKEND_ERROR\",\"Message\":\"The backend service returned an unexpected error\",\"Path\":\"/target/endpoint\",\"Url\":\"https://developer.barclays.com/errors/internal\"}]}"
+}
